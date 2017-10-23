@@ -3,6 +3,7 @@ from django.template.loader import render_to_string
 from django.test import TestCase
 from django.core.urlresolvers import resolve
 # Create your tests here.
+from lists.models import Item
 from .views import home_page
 
 class HomePageTest(TestCase):
@@ -31,6 +32,10 @@ class HomePageTest(TestCase):
 
         response = home_page(request)
 
+        self.assertEqual(Item.objects.count,1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text,'신규 작업 아이')
+
         self.assertIn('신규 작업 아이템',response.content.decode())
         expected_html = render_to_string(
             'home.html',
@@ -38,6 +43,11 @@ class HomePageTest(TestCase):
 
         )
         self.assertEqual(response.content.decode(),expected_html)
+
+    def test_home_page_only_saves_items_when_necessary(self):
+        request = HttpRequest()
+        home_page(request)
+        self.assertEqual(Item.objects.count(),0)
 
 
 class ItemModelTest(TestCase):
